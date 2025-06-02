@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/enhanced-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 25px;
+        }
+        
+        .stat-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+        }
+        
+        .stat-card:nth-child(1)::after {
+            background-color: var(--secondary-color);
+        }
+        
+        .stat-card:nth-child(2)::after {
+            background-color: var(--success-color);
+        }
+        
+        .stat-card:nth-child(3)::after {
+            background-color: var(--warning-color);
+        }
+        
+        .stat-card:nth-child(4)::after {
+            background-color: var(--accent-color);
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            color: var(--dark-gray);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .dashboard-menu {
+            display: flex;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+        
+        .menu-item {
+            padding: 15px 20px;
+            color: var(--dark-gray);
+            text-decoration: none;
+            flex: 1;
+            text-align: center;
+            transition: var(--transition);
+            border-bottom: 3px solid transparent;
+            font-weight: 500;
+        }
+        
+        .menu-item:hover {
+            background-color: var(--light-gray);
+        }
+        
+        .menu-item.active {
+            color: var(--secondary-color);
+            border-bottom-color: var(--secondary-color);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="header-content">
+                <h1>Admin Dashboard</h1>
+                <div>
+                    <a href="{% url 'manage_requests' %}" class="btn" style="background-color: var(--secondary-color);">Manage Requests</a>
+                    <a href="{% url 'home' %}" class="home-btn">Home</a>
+                    <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-error{% else %}alert-info{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        
+        <div class="dashboard-menu">
+            <a href="#supplies" class="menu-item active">Supplies</a>
+            <a href="#locations" class="menu-item">Locations</a>
+            <a href="#requests" class="menu-item">Requests</a>
+            <a href="#reports" class="menu-item">Reports</a>
+        </div>
+        
+        <!-- Stats cards section -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-title">TOTAL LOCATIONS</div>
+                <div class="stat-value">{{ total_locations }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">PENDING REQUESTS</div>
+                <div class="stat-value">{{ total_pending_requests }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">TOTAL FOOD PACKS</div>
+                <div class="stat-value">{{ total_food }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">TOTAL WATER SUPPLY</div>
+                <div class="stat-value">{{ total_water }}</div>
+            </div>
+        </div>
+        
+        <!-- Supplies table section -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Manage Supplies</h3>
+            </div>
+            <div class="search-container">
+                <input type="text" id="locationSearch" class="search-input" placeholder="Search by location..." onkeyup="filterTable()">
+                <button class="search-button">🔍</button>
+            </div>
+            <div class="table-responsive">
+                <table id="suppliesTable" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>LOCATION</th>
+                            <th>FOOD PACKS</th>
+                            <th>WATER SUPPLY</th>
+                            <th>MEDICAL SUPPLY</th>
+                            <th>LAST UPDATED</th>
+                            <th>ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for supply in supplies %}
+                        <tr>
+                            <td>{{ supply.location_name }}</td>
+                            <td>{{ supply.food_packs }}</td>
+                            <td>{{ supply.water_supply }}</td>
+                            <td>{{ supply.medical_supply }}</td>
+                            <td>{{ supply.last_updated_formatted }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" onclick="editSupply('{{ supply.id }}')">Edit</button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">No supplies data available</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>© 2025 Disaster Management System. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">Updated: {% now "F j, Y" %}</p>
+        </div>
+    </footer>
+    
+    <script>
+        function filterTable() {
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("locationSearch");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("suppliesTable");
+            tr = table.getElementsByTagName("tr");
+            
+            for (i = 0; i < tr.length; i++) {
+                td = tr[i].getElementsByTagName("td")[0];
+                if (td) {
+                    txtValue = td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+
+        function editSupply(id) {
+            // Implement edit functionality or redirect to edit page
+            window.location.href = `/edit-supply/${id}/`;
+        }
+    </script>
+    <script>
+        // Handle modal data
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get all update buttons
+            const updateButtons = document.querySelectorAll('[data-target="#updateSuppliesModal"]');
+            
+            // Add click event to each button
+            updateButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Get data attributes
+                    const locationId = this.getAttribute('data-location-id');
+                    const locationName = this.getAttribute('data-location-name');
+                    
+                    // Set values in the modal
+                    document.getElementById('location_id').value = locationId;
+                    document.getElementById('location_name').value = locationName;
+                    
+                    // Show the modal
+                    const modal = document.getElementById('updateSuppliesModal');
+                    modal.style.display = 'block';
+                });
+            });
+            
+            // Close modal when clicking the close button
+            const closeButtons = document.querySelectorAll('[data-dismiss="modal"]');
+            closeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const modal = document.getElementById('updateSuppliesModal');
+                    modal.style.display = 'none';
+                });
+            });
+            
+            // Close modal when clicking outside of it
+            window.addEventListener('click', function(event) {
+                const modal = document.getElementById('updateSuppliesModal');
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
+<!-- Update Supplies Modal -->
+<div class="modal" id="updateSuppliesModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Supplies</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="POST" action="">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <input type="hidden" name="location_id" id="location_id">
+                    <div class="form-group">
+                        <label for="location_name">Location</label>
+                        <input type="text" class="form-control" id="location_name" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="food_packs">Food Packs</label>
+                        <input type="number" class="form-control" id="food_packs" name="food_packs" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="water_supply">Water Supply</label>
+                        <input type="number" class="form-control" id="water_supply" name="water_supply" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="medical_supply">Medical Supply</label>
+                        <input type="number" class="form-control" id="medical_supply" name="medical_supply" min="0">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Disaster Reports - Admin Dashboard</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/enhanced-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .tab-menu {
+            display: flex;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+        
+        .tab-item {
+            padding: 15px 20px;
+            color: var(--dark-gray);
+            text-decoration: none;
+            flex: 1;
+            text-align: center;
+            transition: var(--transition);
+            border-bottom: 3px solid transparent;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .tab-item:hover {
+            background-color: var(--light-gray);
+        }
+        
+        .tab-item.active {
+            color: var(--secondary-color);
+            border-bottom-color: var(--secondary-color);
+            font-weight: 600;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .report-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-active {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        
+        .status-resolved {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .severity-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .severity-low { background-color: #3b82f6; color: white; }
+        .severity-medium { background-color: #f59e0b; color: white; }
+        .severity-high { background-color: #ef4444; color: white; }
+        .severity-critical { background-color: #dc2626; color: white; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="header-content">
+                <h1>Disaster Reports Management</h1>
+                <div>
+                    <a href="{% url 'admin_dashboard' %}" class="btn" style="background-color: var(--secondary-color);">Back to Dashboard</a>
+                    <a href="{% url 'home' %}" class="home-btn">Home</a>
+                    <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-error{% else %}alert-info{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        
+        <div class="tab-menu">
+            <div class="tab-item active" data-tab="active">Active Reports</div>
+            <div class="tab-item" data-tab="resolved">Resolved Reports</div>
+        </div>
+        
+        <div class="tab-content active" id="active">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Active Disaster Reports</h3>
+                </div>
+                {% if active_reports %}
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Location</th>
+                                <th>Reported By</th>
+                                <th>Severity</th>
+                                <th>Description</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in active_reports %}
+                            <tr>
+                                <td>{{ report.location.name }}</td>
+                                <td>{{ report.reported_by.username }}</td>
+                                <td>
+                                    <span class="severity-badge severity-{{ report.severity }}">
+                                        {{ report.severity|title }}
+                                    </span>
+                                </td>
+                                <td>{{ report.description|truncatewords:10 }}</td>
+                                <td>{{ report.reported_date|date:"M d, Y" }}</td>
+                                <td>
+                                    <form method="post" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="report_id" value="{{ report.id }}">
+                                        <input type="hidden" name="action" value="resolve">
+                                        <button type="submit" class="btn btn-sm" style="background-color: var(--success-color); color: white;">
+                                            Mark Resolved
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-center">No active disaster reports.</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="tab-content" id="resolved">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Recently Resolved Reports</h3>
+                </div>
+                {% if resolved_reports %}
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Location</th>
+                                <th>Reported By</th>
+                                <th>Severity</th>
+                                <th>Description</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in resolved_reports %}
+                            <tr>
+                                <td>{{ report.location.name }}</td>
+                                <td>{{ report.reported_by.username }}</td>
+                                <td>
+                                    <span class="severity-badge severity-{{ report.severity }}">
+                                        {{ report.severity|title }}
+                                    </span>
+                                </td>
+                                <td>{{ report.description|truncatewords:10 }}</td>
+                                <td>{{ report.reported_date|date:"M d, Y" }}</td>
+                                <td>
+                                    <form method="post" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="report_id" value="{{ report.id }}">
+                                        <input type="hidden" name="action" value="reactivate">
+                                        <button type="submit" class="btn btn-sm" style="background-color: var(--warning-color); color: white;">
+                                            Reactivate
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-center">No resolved reports to display.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>© 2025 Disaster Management System. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">Updated: {% now "F j, Y" %}</p>
+        </div>
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab functionality
+            const tabItems = document.querySelectorAll('.tab-item');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    // Remove active class from all tabs and contents
+                    tabItems.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    
+                    // Show corresponding content
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

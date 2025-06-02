@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manage Requests - Disaster Management</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/enhanced-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .tab-container {
+            margin-top: 25px;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid var(--medium-gray);
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 12px 25px;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--dark-gray);
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: var(--transition);
+        }
+        
+        .tab.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .request-status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-align: center;
+        }
+        
+        .status-pending {
+            background-color: rgba(217, 119, 6, 0.1);
+            color: var(--warning-color);
+        }
+        
+        .status-approved {
+            background-color: rgba(37, 99, 235, 0.1);
+            color: var(--secondary-color);
+        }
+        
+        .status-delivered {
+            background-color: rgba(5, 150, 105, 0.1);
+            color: var(--success-color);
+        }
+        
+        .status-rejected {
+            background-color: rgba(220, 38, 38, 0.1);
+            color: var(--accent-color);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .action-btn {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            border: none;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="header-content">
+                <h1>Manage Supply Requests</h1>
+                <div>
+                    <a href="{% url 'admin_dashboard' %}" class="btn">Dashboard</a>
+                    <a href="{% url 'home' %}" class="home-btn">Home</a>
+                    <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h3>Supply Requests</h3>
+            </div>
+            
+            <div class="tab-container">
+                <div class="tabs">
+                    <div class="tab active" data-tab="pending">Pending Requests</div>
+                    <div class="tab" data-tab="approved">Approved Requests</div>
+                    <div class="tab" data-tab="completed">Completed Requests</div>
+                </div>
+                
+                <div class="tab-content active" id="pending">
+                    {% if pending_requests %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Location</th>
+                                <th>Requested By</th>
+                                <th>Food</th>
+                                <th>Water</th>
+                                <th>Medical</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for request in pending_requests %}
+                            <tr>
+                                <td>{{ request.location.name }}</td>
+                                <td>{{ request.requested_by.username }}</td>
+                                <td>{{ request.food_packs }}</td>
+                                <td>{{ request.water_supply }}</td>
+                                <td>{{ request.medical_supply }}</td>
+                                <td>{{ request.request_date|date:"M d, Y" }}</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <form method="post">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="request_id" value="{{ request.id }}">
+                                            <input type="hidden" name="action" value="approve">
+                                            <button type="submit" class="action-btn" style="background-color: var(--secondary-color); color: white;">Approve</button>
+                                        </form>
+                                        <form method="post">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="request_id" value="{{ request.id }}">
+                                            <input type="hidden" name="action" value="reject">
+                                            <button type="submit" class="action-btn" style="background-color: var(--accent-color); color: white;">Reject</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p>No pending requests.</p>
+                    {% endif %}
+                </div>
+                
+                <div class="tab-content" id="approved">
+                    {% if approved_requests %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Location</th>
+                                <th>Requested By</th>
+                                <th>Food</th>
+                                <th>Water</th>
+                                <th>Medical</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for request in approved_requests %}
+                            <tr>
+                                <td>{{ request.location.name }}</td>
+                                <td>{{ request.requested_by.username }}</td>
+                                <td>{{ request.food_packs }}</td>
+                                <td>{{ request.water_supply }}</td>
+                                <td>{{ request.medical_supply }}</td>
+                                <td>{{ request.request_date|date:"M d, Y" }}</td>
+                                <td>
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="request_id" value="{{ request.id }}">
+                                        <input type="hidden" name="action" value="deliver">
+                                        <button type="submit" class="action-btn" style="background-color: var(--success-color); color: white;">Mark Delivered</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p>No approved requests.</p>
+                    {% endif %}
+                </div>
+                
+                <div class="tab-content" id="completed">
+                    {% if completed_requests %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Location</th>
+                                <th>Requested By</th>
+                                <th>Status</th>
+                                <th>Food</th>
+                                <th>Water</th>
+                                <th>Medical</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for request in completed_requests %}
+                            <tr>
+                                <td>{{ request.location.name }}</td>
+                                <td>{{ request.requested_by.username }}</td>
+                                <td>
+                                    {% if request.status == 'delivered' %}
+                                    <span class="request-status status-delivered">Delivered</span>
+                                    {% elif request.status == 'rejected' %}
+                                    <span class="request-status status-rejected">Rejected</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ request.food_packs }}</td>
+                                <td>{{ request.water_supply }}</td>
+                                <td>{{ request.medical_supply }}</td>
+                                <td>{{ request.request_date|date:"M d, Y" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p>No completed requests.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>© 2025 Disaster Management System. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">Updated: {% now "F j, Y" %}</p>
+        </div>
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab functionality
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs and contents
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    
+                    // Show corresponding content
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+
+

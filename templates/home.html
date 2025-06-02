@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Disaster Management System</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/enhanced-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .hero-section {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(rgba(30, 58, 138, 0.05), rgba(30, 58, 138, 0.1));
+            border-radius: var(--border-radius);
+            margin-top: 30px;
+        }
+        
+        .hero-section h2 {
+            font-size: 2.2rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+        
+        .hero-section p {
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto 25px;
+            color: var(--dark-gray);
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .emergency-contacts {
+            background-color: rgba(220, 38, 38, 0.05);
+            border-left: 4px solid var(--accent-color);
+            padding: 15px 20px;
+            margin-top: 20px;
+        }
+        
+        .emergency-contacts h4 {
+            color: var(--accent-color);
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="header-content">
+                <h1>Disaster Management System</h1>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="hero-section">
+            <h2>Efficient Disaster Response & Resource Management</h2>
+            <p>Our system helps coordinate emergency responses, track critical supplies, and ensure efficient resource allocation during disaster situations.</p>
+            <div class="btn-group">
+                <a href="{% url 'login' %}" class="btn">Login to System</a>
+                <a href="{% url 'public_view' %}" class="btn btn-success">View Available Supplies</a>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h3>About the System</h3>
+            </div>
+            <p>Our disaster management system provides real-time tracking of essential supplies across different locations. Key features include:</p>
+            
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <h4>Real-time Tracking</h4>
+                    <p>Monitor inventory of food, water, and medical supplies</p>
+                </div>
+                <div class="feature-item">
+                    <h4>Disaster Reporting</h4>
+                    <p>Report disasters and track response efforts</p>
+                </div>
+                <div class="feature-item">
+                    <h4>Supply Management</h4>
+                    <p>Efficiently manage and distribute resources</p>
+                </div>
+                <div class="feature-item">
+                    <h4>Public Access</h4>
+                    <p>Transparent view of current supply levels</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h3>Emergency Contacts</h3>
+            </div>
+            <div class="emergency-contacts">
+                <h4>For Immediate Assistance</h4>
+                <ul style="padding-left: 20px; line-height: 1.6;">
+                    <li><strong>Emergency Hotline:</strong> 911</li>
+                    <li><strong>Disaster Response Team:</strong> 555-0123</li>
+                    <li><strong>Medical Emergency:</strong> 555-0199</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h3>Access the System</h3>
+            </div>
+            <p>Please login to access the system features. If you don't have an account, please contact the administrator.</p>
+            
+            <div style="display: flex; gap: 15px; margin-top: 25px; flex-wrap: wrap;">
+                <a href="{% url 'login' %}" class="btn">Login as User</a>
+                <a href="{% url 'login' %}" class="btn btn-warning">Login as Admin</a>
+                <a href="{% url 'public_view' %}" class="btn btn-success">View Available Supplies</a>
+            </div>
+            
+            <div class="alert alert-info mt-3">
+                <h4 class="mt-0 mb-1">Demo Accounts:</h4>
+                <p class="mb-0"><strong>Regular User:</strong> username: user1, password: password123</p>
+                <p class="mb-0"><strong>Admin User:</strong> username: admin, password: admin123</p>
+                <p class="mb-0"><em>Note: These are sample credentials. In a real system, you would need to create accounts through the Django admin interface.</em></p>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>© 2025 Disaster Management System. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">Updated: {% now "F j, Y" %}</p>
+        </div>
+    </footer>
+</body>
+</html>

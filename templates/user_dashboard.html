@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Dashboard - Disaster Management</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/enhanced-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-top: 25px;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .action-panel {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            padding: 25px;
+            transition: var(--transition);
+            border: 1px solid var(--medium-gray);
+        }
+        
+        .action-panel:hover {
+            box-shadow: var(--shadow-md);
+        }
+        
+        .action-panel h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--medium-gray);
+        }
+        
+        .request-item {
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+            background-color: var(--light-gray);
+            border-left: 4px solid;
+        }
+        
+        .request-item.pending {
+            border-left-color: var(--warning-color);
+        }
+        
+        .request-item.approved {
+            border-left-color: var(--secondary-color);
+        }
+        
+        .request-item.delivered {
+            border-left-color: var(--success-color);
+        }
+        
+        .request-item.rejected {
+            border-left-color: var(--accent-color);
+        }
+        
+        .request-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .request-location {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+        
+        .request-status {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .status-pending {
+            background-color: rgba(217, 119, 6, 0.1);
+            color: var(--warning-color);
+        }
+        
+        .status-approved {
+            background-color: rgba(37, 99, 235, 0.1);
+            color: var(--secondary-color);
+        }
+        
+        .status-delivered {
+            background-color: rgba(5, 150, 105, 0.1);
+            color: var(--success-color);
+        }
+        
+        .status-rejected {
+            background-color: rgba(220, 38, 38, 0.1);
+            color: var(--accent-color);
+        }
+        
+        .request-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .detail-item {
+            text-align: center;
+        }
+        
+        .detail-label {
+            font-size: 0.8rem;
+            color: var(--dark-gray);
+            margin-bottom: 5px;
+        }
+        
+        .detail-value {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .request-date {
+            font-size: 0.8rem;
+            color: var(--dark-gray);
+            margin-top: 10px;
+            text-align: right;
+        }
+        
+        .dashboard-menu {
+            display: flex;
+            background-color: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            margin-top: 20px;
+            border: 1px solid var(--medium-gray);
+        }
+        
+        .menu-item {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            color: var(--dark-gray);
+            text-decoration: none;
+            transition: var(--transition);
+            border-bottom: 3px solid transparent;
+        }
+        
+        .menu-item:hover {
+            background-color: var(--light-gray);
+        }
+        
+        .menu-item.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+            font-weight: 500;
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .submit-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        
+        .submit-btn:hover {
+            background-color: #1a365d;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="header-content">
+                <h1>User Dashboard</h1>
+                <div>
+                    <a href="{% url 'home' %}" class="home-btn">Home</a>
+                    <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}error{% else %}{{ message.tags }}{% endif %} mt-3">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        <div class="dashboard-menu">
+            <a href="#supplies" class="menu-item active" data-tab="supplies">Available Supplies</a>
+            <a href="#request-supplies" class="menu-item" data-tab="request-supplies">Request Supplies</a>
+            <a href="#my-requests" class="menu-item" data-tab="my-requests">My Requests</a>
+            <a href="#report-disaster" class="menu-item" data-tab="report-disaster">Report Disaster</a>
+        </div>
+        
+        <div class="tab-content active" id="supplies">
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h3>Current Supply Levels</h3>
+                </div>
+                
+                <div class="location-grid">
+                    {% for supply in supplies %}
+                    <div class="location-card">
+                        <div class="location-header">
+                            <h4>{{ supply.location.name }}</h4>
+                            <small>{{ supply.location.address }}</small>
+                        </div>
+                        <div class="location-body">
+                            <div class="supply-item">
+                                <span class="supply-label">Food Packs:</span>
+                                <span class="supply-value {% if supply.food_packs < 10 %}low-supply{% endif %}">
+                                    {{ supply.food_packs }}
+                                </span>
+                            </div>
+                            <div class="supply-item">
+                                <span class="supply-label">Water Supply:</span>
+                                <span class="supply-value {% if supply.water_supply < 10 %}low-supply{% endif %}">
+                                    {{ supply.water_supply }}
+                                </span>
+                            </div>
+                            <div class="supply-item">
+                                <span class="supply-label">Medical Supply:</span>
+                                <span class="supply-value {% if supply.medical_supply < 10 %}low-supply{% endif %}">
+                                    {{ supply.medical_supply }}
+                                </span>
+                            </div>
+                            <div class="supply-item">
+                                <span class="supply-label">Last Updated:</span>
+                                <span class="supply-value">{{ supply.last_updated|date:"M d, Y" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p>No supplies information available.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="request-supplies">
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h3>Request Supplies</h3>
+                </div>
+                <p>Use this form to request additional supplies for a specific location.</p>
+                
+                <form method="post" class="mt-3">
+                    {% csrf_token %}
+                    <input type="hidden" name="request_supplies" value="1">
+                    
+                    <div class="form-group">
+                        <label for="location" class="form-label">Location:</label>
+                        <select name="location" id="location" class="form-control form-select" required>
+                            <option value="">Select a location</option>
+                            {% for location in locations %}
+                            <option value="{{ location.id }}">{{ location.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="dashboard-grid" style="margin-top: 15px;">
+                        <div class="form-group">
+                            <label for="food_packs" class="form-label">Food Packs:</label>
+                            <input type="number" name="food_packs" id="food_packs" class="form-control" min="0" value="0">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="water_supply" class="form-label">Water Supply:</label>
+                            <input type="number" name="water_supply" id="water_supply" class="form-control" min="0" value="0">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="medical_supply" class="form-label">Medical Supply:</label>
+                        <input type="number" name="medical_supply" id="medical_supply" class="form-control" min="0" value="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="notes" class="form-label">Notes:</label>
+                        <textarea name="notes" id="notes" class="form-control form-textarea" rows="4"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button type="submit" class="submit-btn">Submit Request</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="my-requests">
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h3>My Supply Requests</h3>
+                </div>
+                
+                {% if user_requests %}
+                <div class="mt-3">
+                    {% for request in user_requests %}
+                    <div class="request-item {% if request.status == 'pending' %}pending{% elif request.status == 'approved' %}approved{% elif request.status == 'delivered' %}delivered{% else %}rejected{% endif %}">
+                        <div class="request-header">
+                            <span class="request-location">{{ request.location.name }}</span>
+                            <span class="request-status status-{{ request.status }}">
+                                {{ request.get_status_display }}
+                            </span>
+                        </div>
+                        
+                        <div class="request-details">
+                            <div class="detail-item">
+                                <div class="detail-label">Food Packs</div>
+                                <div class="detail-value">{{ request.food_packs }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Water Supply</div>
+                                <div class="detail-value">{{ request.water_supply }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Medical Supply</div>
+                                <div class="detail-value">{{ request.medical_supply }}</div>
+                            </div>
+                        </div>
+                        
+                        {% if request.notes %}
+                        <div class="request-notes mt-2">
+                            <small><strong>Notes:</strong> {{ request.notes }}</small>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="request-date">
+                            Requested on {{ request.request_date|date:"M d, Y" }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="mt-3">You haven't made any supply requests yet.</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="tab-content" id="report-disaster">
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h3>Report a Disaster</h3>
+                </div>
+                <p>Use this form to report a disaster situation at a specific location.</p>
+                
+                <form method="post" class="mt-3">
+                    {% csrf_token %}
+                    <input type="hidden" name="report_disaster" value="1">
+                    
+                    <div class="form-group">
+                        <label for="location" class="form-label">Location:</label>
+                        <select name="location" id="location" class="form-control form-select" required>
+                            <option value="">Select a location</option>
+                            {% for location in locations %}
+                            <option value="{{ location.id }}">{{ location.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="severity" class="form-label">Severity:</label>
+                        <select name="severity" id="severity" class="form-control form-select" required>
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                            <option value="critical">Critical</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description" class="form-label">Description:</label>
+                        <textarea name="description" id="description" class="form-control form-textarea" rows="4" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button type="submit" class="submit-btn">Submit Report</button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h3>My Recent Reports</h3>
+                </div>
+                
+                {% if user_reports %}
+                <div class="mt-3">
+                    {% for report in user_reports %}
+                    <div class="request-item {% if report.is_active %}pending{% else %}delivered{% endif %}">
+                        <div class="request-header">
+                            <span class="request-location">{{ report.location.name }}</span>
+                            <span class="request-status {% if report.is_active %}status-pending{% else %}status-delivered{% endif %}">
+                                {% if report.is_active %}Active{% else %}Resolved{% endif %}
+                            </span>
+                        </div>
+                        
+                        <div class="mt-2">
+                            <span class="badge badge-{% if report.severity == 'low' %}info{% elif report.severity == 'medium' %}warning{% elif report.severity == 'high' %}danger{% else %}danger{% endif %}">
+                                {{ report.get_severity_display }}
+                            </span>
+                        </div>
+                        
+                        <div class="mt-2">
+                            <p>{{ report.description }}</p>
+                        </div>
+                        
+                        <div class="request-date">
+                            Reported on {{ report.reported_date|date:"M d, Y" }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="mt-3">You haven't submitted any disaster reports yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>© 2025 Disaster Management System. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">Updated: {% now "F j, Y" %}</p>
+        </div>
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab functionality
+            const menuItems = document.querySelectorAll('.menu-item');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            menuItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Remove active class from all menu items and tab contents
+                    menuItems.forEach(i => i.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    
+                    // Add active class to clicked menu item
+                    this.classList.add('active');
+                    
+                    // Show corresponding tab content
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

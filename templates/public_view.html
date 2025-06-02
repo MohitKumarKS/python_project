@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Public View - Disaster Management</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/enhanced-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .search-container {
+            position: relative;
+            margin-bottom: 25px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 20px;
+            padding-right: 50px;
+            border: 1px solid var(--medium-gray);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .search-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+            outline: none;
+        }
+        
+        .search-button {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--dark-gray);
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        .location-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 25px;
+        }
+        
+        .location-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            border: 1px solid var(--medium-gray);
+        }
+        
+        .location-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .location-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 20px;
+        }
+        
+        .location-header h4 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+        
+        .location-body {
+            padding: 20px;
+        }
+        
+        .supply-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+        
+        .supply-item:last-child {
+            border-bottom: none;
+        }
+        
+        .supply-label {
+            color: var(--dark-gray);
+            font-weight: 500;
+        }
+        
+        .supply-value {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .low-supply {
+            color: var(--accent-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="header-content">
+                <h1>Disaster Management System</h1>
+                <div>
+                    <a href="{% url 'home' %}" class="home-btn">Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h3>Available Supplies</h3>
+            </div>
+            <p>Below is the current inventory of essential supplies across all locations. This information is updated regularly by our management team.</p>
+            
+            <form method="get" action="{% url 'public_view' %}">
+                <div class="search-container">
+                    <input type="text" name="search" placeholder="Search by location name or address..." class="search-input" value="{{ search_query }}">
+                    <button type="submit" class="search-button">🔍</button>
+                </div>
+            </form>
+            
+            <div class="location-grid">
+                {% for supply in supplies %}
+                <div class="location-card">
+                    <div class="location-header">
+                        <h4>{{ supply.location.name }}</h4>
+                        <small>{{ supply.location.address }}</small>
+                    </div>
+                    <div class="location-body">
+                        <div class="supply-item">
+                            <span class="supply-label">Food Packs:</span>
+                            <span class="supply-value {% if supply.food_packs < 10 %}low-supply{% endif %}">
+                                {{ supply.food_packs }}
+                            </span>
+                        </div>
+                        <div class="supply-item">
+                            <span class="supply-label">Water Supply:</span>
+                            <span class="supply-value {% if supply.water_supply < 10 %}low-supply{% endif %}">
+                                {{ supply.water_supply }}
+                            </span>
+                        </div>
+                        <div class="supply-item">
+                            <span class="supply-label">Medical Supply:</span>
+                            <span class="supply-value {% if supply.medical_supply < 10 %}low-supply{% endif %}">
+                                {{ supply.medical_supply }}
+                            </span>
+                        </div>
+                        <div class="supply-item">
+                            <span class="supply-label">Last Updated:</span>
+                            <span class="supply-value">{{ supply.last_updated|date:"M d, Y" }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p>No supplies found matching your search criteria.</p>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h3>Emergency Contacts</h3>
+            </div>
+            <p>If you need immediate assistance, please contact the following emergency services:</p>
+            <ul>
+                <li><strong>Emergency Hotline:</strong> 911</li>
+                <li><strong>Disaster Response Team:</strong> 555-0123</li>
+                <li><strong>Medical Emergency:</strong> 555-0199</li>
+            </ul>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>© 2025 Disaster Management System. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">Updated: {% now "F j, Y" %}</p>
+        </div>
+    </footer>
+</body>
+<head

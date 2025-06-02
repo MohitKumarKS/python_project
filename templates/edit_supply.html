@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Supply - Disaster Management</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/enhanced-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="header-content">
+                <h1>Edit Supply</h1>
+                <div>
+                    <a href="{% url 'admin_dashboard' %}" class="btn" style="background-color: var(--secondary-color);">Back to Dashboard</a>
+                    <a href="{% url 'home' %}" class="home-btn">Home</a>
+                    <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-error{% else %}alert-info{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        
+        <div class="card">
+            <div class="card-header">
+                <h3>Edit Supplies for {{ location.name }}</h3>
+            </div>
+            <div class="card-body">
+                <p><strong>Location:</strong> {{ location.name }}</p>
+                <p><strong>Address:</strong> {{ location.address }}</p>
+                
+                <form method="POST" class="mt-4">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label for="food_packs" class="form-label">Food Packs:</label>
+                        <input type="number" class="form-control" id="food_packs" name="food_packs" 
+                               value="{{ supply.food_packs }}" min="0" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="water_supply" class="form-label">Water Supply:</label>
+                        <input type="number" class="form-control" id="water_supply" name="water_supply" 
+                               value="{{ supply.water_supply }}" min="0" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="medical_supply" class="form-label">Medical Supply:</label>
+                        <input type="number" class="form-control" id="medical_supply" name="medical_supply" 
+                               value="{{ supply.medical_supply }}" min="0" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">Update Supplies</button>
+                        <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>© 2025 Disaster Management System. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">Updated: {% now "F j, Y" %}</p>
+        </div>
+    </footer>
+</body>
+</html>
